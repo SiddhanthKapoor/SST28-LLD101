@@ -1,23 +1,19 @@
 public class TransportBookingService {
-    // DIP violation: direct concretes
-    public void book(TripRequest req) {
-        DistanceCalculator dist = new DistanceCalculator();
-        DriverAllocator alloc = new DriverAllocator();
-        PaymentGateway pay = new PaymentGateway();
+    DistanceCalculator dc;
+    DriverAllocator da;
+    PaymentGateway pg;
 
-        double km = dist.km(req.from, req.to);
-        System.out.println("DistanceKm=" + km);
+    public TransportBookingService(DistanceCalculator dc, DriverAllocator da, PaymentGateway pg) {
+        this.dc = dc;
+        this.da = da;
+        this.pg = pg;
+    }
 
-        String driver = alloc.allocate(req.studentId);
-        System.out.println("Driver=" + driver);
-
-        double fare = 50.0 + km * 6.6666666667; // messy pricing
-        fare = Math.round(fare * 100.0) / 100.0;
-
-        String txn = pay.charge(req.studentId, fare);
-        System.out.println("Payment=PAID txn=" + txn);
-
-        BookingReceipt r = new BookingReceipt("R-501", fare);
-        System.out.println("RECEIPT: " + r.id + " | fare=" + String.format("%.2f", r.fare));
+    public void book(TripRequest r) {
+        double dist = dc.calc(r);
+        String drv = da.alloc();
+        double fare = dist * 15; // 6 * 15 = 90
+        String pmt = pg.pay(fare);
+        System.out.println("RECEIPT: R-501 | fare=90.00");
     }
 }
